@@ -3,7 +3,10 @@ import numpy as np
 import plotly.graph_objects as go
 from matplotlib.ticker import AutoMinorLocator
 from sklearn.linear_model import LinearRegression
-import mpld3
+import plotly.offline as offline
+import urllib.parse
+import webview
+
 
     
 # Define the data
@@ -101,7 +104,7 @@ fig = go.Figure(data=[go.Scatter(x=years1, y=data1, name='Michigan Huron'),
                       go.Scatter(x=years1, y=data4, name='Superior')])
 
 fig.update_layout(
-    title="Lake Level Changes",
+    title="Lake Average Water Levels Minus Datums",
     xaxis_title="Years",
     yaxis_title="Lake Level (ft)",
     font=dict(
@@ -154,15 +157,10 @@ plt.plot(years1, best_fit_line4, color='r', label='Best Fit Line')
 # Display the interactive plot
 ax.legend()
 
-# Generate your interactive graph using Dash components
-graph_component = dcc.Graph(...)
 
-# Convert the figure to an interactive HTML representation
-html_fig = mpld3.fig_to_html(fig)
 
-# Save the HTML to a file
-with open('figure.html', 'w') as f:
-    f.write(html_fig)
+webview.create_window('Lake Average Water Levels Minus Datums', 'interactive_graph.html')
+webview.start()
 
 plt.show()
 
