@@ -38,10 +38,7 @@ data2 = pd.read_csv('/Users/ash/Desktop/NOAA/project1/Calumet.csv')
 data2['Date'] = pd.to_datetime(data2['Date'])
 data2['MSL (m)'] = (data2['MSL (m)'] - 176.0)
 
-data3 = pd.DataFrame({
-    'Date': [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022],
-    'Vertical': [0.9324085625, 0.9267443025, 0.9188609818, 0.9193130909, 0.9153166444, 0.9153006061, 0.9083119727, 0.9027900529, 0.9035817940, 0.9033872370, 0.9020906703, 0.8954964214, 0.8906804753, 0.8869811168, 0.8860495238, 0.8788295795, 0.8765370646, 0.8706148119, 0.8688887826, 0.8702171985]
-})
+
 
 # Calculate yearly averages for data1
 data1_yearly_avg = pd.DataFrame({'Date': years1, 'Vertical': data1})
@@ -50,8 +47,6 @@ data1_yearly_avg = data1_yearly_avg.groupby('Date')['Vertical'].mean()
 # Calculate yearly averages for data2
 data2_yearly_avg = data2.groupby(data2['Date'].dt.year)['MSL (m)'].mean()
 
-# Calculate yearly averages for data3
-data3_yearly_avg = data3.groupby(data3['Date'])['Vertical'].mean()
 
 
 # Perform linear regression for data1
@@ -68,17 +63,11 @@ y2 = data2_yearly_avg.values.reshape(-1, 1)
 regression_model2.fit(X2, y2)
 y_pred2 = regression_model2.predict(X2)
 
-# Perform linear regression for data3
-regression_model3 = LinearRegression()
-X3 = data3_yearly_avg.index.values.reshape(-1, 1)
-y3 = data3_yearly_avg.values.reshape(-1, 1)
-regression_model3.fit(X3, y3)
-y_pred3 = regression_model3.predict(X3)
+
 
 # Add the slopes to the plot's legeng
 slope1 = regression_model1.coef_[0][0]
 slope2 = regression_model2.coef_[0][0]
-slope3 = regression_model3.coef_[0][0]
 
 
 # Configure the axes
@@ -96,36 +85,30 @@ ax.plot(data1_yearly_avg.index, y_pred1.flatten(), color='blue', linestyle='--',
 ax.plot(data2_yearly_avg.index[:-1], data2_yearly_avg.values[:-1], color='orangered', label='Lake Michigan Calumet')
 ax.plot(data2_yearly_avg.index[:-1], y_pred2[:-1], color='darkorange', linestyle='--', label='Line Of Best Fit Calumet')
 
-# Plot the yearly average and best fit lines for data3
-ax.plot(data3_yearly_avg.index, data3_yearly_avg.values, color='mediumorchid', label='GNSS')
-ax.plot(data3_yearly_avg.index, y_pred3.flatten(), color='purple', linestyle='--', label='Line Of Best Fit GNSS')
 
 
-ax.legend(title='Slopes', labels=[f'Calumet: {slope2:.3f}', f'GNSS: {slope3:.3f}'])
+ax.legend(title='Slopes', labels=[f'Calumet: {slope2:.3f}'])
 
 
 # Convert the Matplotlib figure to Plotly format
 fig_plotly = go.Figure()
-fig_plotly.add_trace(go.Scatter(x=data1_yearly_avg.index, y=data1_yearly_avg.values, name='Water Level Data 1', line=dict(color='dodgerblue')))
-fig_plotly.add_trace(go.Scatter(x=data2_yearly_avg.index[:-1], y=data2_yearly_avg.values[:-1], name='Water Level Minus Datums', line=dict(color='orangered')))
-fig_plotly.add_trace(go.Scatter(x=data3_yearly_avg.index, y=data3_yearly_avg.values, name='GNSS', line=dict(color='mediumorchid')))
-fig_plotly.add_trace(go.Scatter(x=data1_yearly_avg.index[:-1], y=y_pred1.flatten(), name='Line Of Best Fit Data 1', line=dict(color='blue', dash='dash')))
-fig_plotly.add_trace(go.Scatter(x=data2_yearly_avg.index[:-1], y=y_pred2.flatten(), name='Line Of Best Fit Calumet', line=dict(color='darkorange', dash='dash')))
-fig_plotly.add_trace(go.Scatter(x=data3_yearly_avg.index, y=y_pred3.flatten(), name='Line Of Best Fit GNSS', line=dict(color='purple', dash='dash')))
+fig_plotly.add_trace(go.Scatter(x=data1_yearly_avg.index, y=data1_yearly_avg.values, name='Michigan-Huron Water Levels', line=dict(color='dodgerblue')))
+fig_plotly.add_trace(go.Scatter(x=data2_yearly_avg.index[:-1], y=data2_yearly_avg.values[:-1], name='Calumet Water Levels', line=dict(color='orangered')))
+fig_plotly.add_trace(go.Scatter(x=data1_yearly_avg.index[:-1], y=y_pred1.flatten(), name='Line Of Best Fit Michigan-Huron Water Levels', line=dict(color='blue', dash='dash')))
+fig_plotly.add_trace(go.Scatter(x=data2_yearly_avg.index[:-1], y=y_pred2.flatten(), name='Line Of Best Fit Calumet Water Levels', line=dict(color='darkorange', dash='dash')))
 
 fig_plotly.update_layout(
-    title={'text': 'Lake Michigan-Huron Water Levels vs Calumet Water Levels vs GNSS Vertical Displacement', 'font': dict(color='RebeccaPurple')},
+    title={'text': 'Lake Michigan-Huron Water Levels vs Calumet Water Levels', 'font': dict(color='RebeccaPurple')},
     xaxis_title={'text': 'Year', 'font': dict(color='RebeccaPurple')},
-    yaxis_title={'text': 'Vertical Displacement (m) -  Water Level Minus Datums (m)', 'font': dict(color='RebeccaPurple')},
+    yaxis_title={'text': ' Water Level Minus Datums (m)', 'font': dict(color='RebeccaPurple')},
     hovermode='closest',
     font=dict(family='Courier New, monospace', size=16),
     xaxis_range=[1918, 2022]
 )
 
 # Add the slope text annotations to the side of the graph
-slope_annotation1 = f'Data 1 Slope: {slope1:.3f}'
-slope_annotation2 = f'Calumet Slope: {slope2:.3f}'
-slope_annotation3 = f'GNSS Slope: {slope3:.3f}'
+slope_annotation1 = f'Lake Michigan-Huron Water Levels Slope: {slope1:.3f}'
+slope_annotation2 = f'Calumet Water Levels Slope: {slope2:.3f}'
 fig_plotly.add_annotation(
     x=0.05,
     y=0.92,
@@ -146,16 +129,7 @@ fig_plotly.add_annotation(
     xref='paper',
     yref='paper'
 )
-fig_plotly.add_annotation(
-    x=0.05,
-    y=0.84,
-    text=slope_annotation3,
-    showarrow=False,
-    font=dict(size=15),
-    align='left',
-    xref='paper',
-    yref='paper'
-)
+
 
 # Show the graph
 fig_plotly.show()
